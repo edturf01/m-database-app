@@ -1,11 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 function App() {
   const [query, setQuery] = useState("");
   const [movie, setMovie] = useState(null);
   const [error, setError] = useState("");
+  const [favorites, setFavorites] = useState([]);
 
   const API_KEY = "450513ee";
+
+  // Load favorites from local storage on mount
+  useEffect(() => {
+    const storedFavorites = JSON.parse(localStorage.getItem("favorites")) || [];
+    setFavorites(storedFavorites);
+  }, []);
+
+  // Update local storage whenever favorites change
+  useEffect(() => {
+    localStorage.setItem("favorites", JSON.stringify(favorites));
+  }, [favorites]);
 
   const searchMovie = async () => {
     if (!query) return;
@@ -27,38 +39,69 @@ function App() {
     }
   };
 
-  return (
-    <div className="App p-4 max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4 text-center">Movie Database</h1>
-      
-      <div className="flex mb-4">
-        <input
-          type="text"
-          placeholder="Search for a movie"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="flex-1 border p-2 mr-2 rounded"
-        />
-        <button
-          onClick={searchMovie}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          Search
-        </button>
-      </div>
+  const addFavorite = (movie) => {
+    if (!favorites.find((fav) => fav.imdbID === movie.imdbID)) {
+      setFavorites([...favorites, movie]);
+    }
+  };
 
-      {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
+  const removeFavorite = (id) => {
+    setFavorites(favorites.filter((fav) => fav.imdbID !== id));
+  };
+
+  return (
+    <div className="App p-4">
+      <h1 className="text-2xl font-bold mb-4">Movie Database</h1>
+
+      <input
+        type="text"
+        placeholder="Search for a movie"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        className="border p-2 mr-2"
+      />
+      <button onClick={searchMovie} className="bg-blue-500 text-white px-4 py-2">
+        Search
+      </button>
+
+      {error && <p className="text-red-500 mt-4">{error}</p>}
 
       {movie && (
-        <div className="mt-4 border p-4 rounded shadow-md">
-          <h2 className="text-xl font-semibold mb-2">{movie.Title}</h2>
-          <p><strong>Year:</strong> {movie.Year}</p>
-          <p><strong>Genre:</strong> {movie.Genre}</p>
-          <p><strong>Cast:</strong> {movie.Actors}</p>
-          <p className="mt-2">{movie.Plot}</p>
-          {movie.Poster && (
-            <img src={movie.Poster} alt={movie.Title} className="mt-4 w-48 mx-auto" />
-          )}
+        <div className="mt-4 border p-4 rounded">
+          <h2 className="text-xl font-semibold">{movie.Title}</h2>
+          <p>Year: {movie.Year}</p>
+          <p>Genre: {movie.Genre}</p>
+          <p>Cast: {movie.Actors}</p>
+          <p>Plot: {movie.Plot}</p>
+          <img src={movie.Poster} alt={movie.Title} className="mt-2 w-48" />
+          <div className="mt-2">
+            <button
+              onClick={() => addFavorite(movie)}
+              className="bg-green-500 text-white px-3 py-1 mr-2"
+            >
+              Add to Favorites
+            </button>
+          </div>
+        </div>
+      )}
+
+      {favorites.length > 0 && (
+        <div className="mt-6">
+          <h2 className="text-xl font-bold mb-2">Favorites</h2>
+          <ul>
+            {favorites.map((fav) => (
+              <li key={fav.imdbID} className="mb-2 flex items-center">
+                <img src={fav.Poster} alt={fav.Title} className="w-16 mr-2" />
+                <span>{fav.Title}</span>
+                <button
+                  onClick={() => removeFavorite(fav.imdbID)}
+                  className="bg-red-500 text-white px-2 py-1 ml-2"
+                >
+                  Remove
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
