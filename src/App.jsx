@@ -2,40 +2,46 @@ import React, { useState, useEffect } from "react";
 
 function App() {
   const [query, setQuery] = useState("");
-  const [movie, setMovie] = useState(null);
+  const [movies, setMovies] = useState([]);
   const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalResults, setTotalResults] = useState(0);
   const [favorites, setFavorites] = useState([]);
 
   const API_KEY = "450513ee";
 
-  // Load favorites from local storage on mount
+ 
   useEffect(() => {
     const storedFavorites = JSON.parse(localStorage.getItem("favorites")) || [];
     setFavorites(storedFavorites);
   }, []);
 
-  // Update local storage whenever favorites change
+ 
   useEffect(() => {
     localStorage.setItem("favorites", JSON.stringify(favorites));
   }, [favorites]);
 
-  const searchMovie = async () => {
+  const searchMovie = async (newPage = 1) => {
     if (!query) return;
     try {
       const response = await fetch(
-        `https://www.omdbapi.com/?t=${query}&apikey=${API_KEY}`
+        `https://www.omdbapi.com/?s=${query}&apikey=${API_KEY}&page=${newPage}`
       );
       const data = await response.json();
       if (data.Response === "True") {
-        setMovie(data);
+        setMovies(data.Search);
         setError("");
+        setTotalResults(parseInt(data.totalResults));
+        setPage(newPage);
       } else {
-        setMovie(null);
+        setMovies([]);
         setError(data.Error);
+        setTotalResults(0);
       }
     } catch (err) {
       setError("Failed to fetch data");
-      setMovie(null);
+      setMovies([]);
+      setTotalResults(0);
     }
   };
 
@@ -49,10 +55,11 @@ function App() {
     setFavorites(favorites.filter((fav) => fav.imdbID !== id));
   };
 
+  const totalPages = Math.ceil(totalResults / 10);
+
   return (
     <div className="App p-4">
       <h1 className="text-2xl font-bold mb-4">Movie Database</h1>
-
       <input
         type="text"
         placeholder="Search for a movie"
@@ -60,48 +67,81 @@ function App() {
         onChange={(e) => setQuery(e.target.value)}
         className="border p-2 mr-2"
       />
-      <button onClick={searchMovie} className="bg-blue-500 text-white px-4 py-2">
+      <button
+        onClick={() => searchMovie(1)}
+        className="bg-blue-500 text-white px-4 py-2"
+      >
         Search
       </button>
 
       {error && <p className="text-red-500 mt-4">{error}</p>}
 
-      {movie && (
-        <div className="mt-4 border p-4 rounded">
-          <h2 className="text-xl font-semibold">{movie.Title}</h2>
-          <p>Year: {movie.Year}</p>
-          <p>Genre: {movie.Genre}</p>
-          <p>Cast: {movie.Actors}</p>
-          <p>Plot: {movie.Plot}</p>
-          <img src={movie.Poster} alt={movie.Title} className="mt-2 w-48" />
-          <div className="mt-2">
+      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {movies.map((movie) => (
+          <div key={movie.imdbID} className="border p-2">
+            <h2 className="text-xl font-semibold">{movie.Title}</h2>
+            <p>Year: {movie.Year}</p>
+            {movie.Poster !== "N/A" && (
+              <img src={movie.Poster} alt={movie.Title} className="mt-2 w-48" />
+            )}
             <button
-              onClick={() => addFavorite(movie)}
-              className="bg-green-500 text-white px-3 py-1 mr-2"
+              onClick={() =>
+                favorites.find((fav) => fav.imdbID === movie.imdbID)
+                  ? removeFavorite(movie.imdbID)
+                  : addFavorite(movie)
+              }
+              className="mt-2 bg-green-500 text-white px-3 py-1"
             >
-              Add to Favorites
+              {favorites.find((fav) => fav.imdbID === movie.imdbID)
+                ? "Remove from Favorites"
+                : "Add to Favorites"}
             </button>
           </div>
+        ))}
+      </div>
+
+      {totalPages > 1 && (
+        <div className="mt-4 flex gap-2">
+          <button
+            disabled={page === 1}
+            onClick={() => searchMovie(page - 1)}
+            className="bg-gray-300 px-3 py-1 disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <span>
+            Page {page} of {totalPages}
+          </span>
+          <button
+            disabled={page === totalPages}
+            onClick={() => searchMovie(page + 1)}
+            className="bg-gray-300 px-3 py-1 disabled:opacity-50"
+          >
+            Next
+          </button>
         </div>
       )}
 
       {favorites.length > 0 && (
-        <div className="mt-6">
-          <h2 className="text-xl font-bold mb-2">Favorites</h2>
-          <ul>
-            {favorites.map((fav) => (
-              <li key={fav.imdbID} className="mb-2 flex items-center">
-                <img src={fav.Poster} alt={fav.Title} className="w-16 mr-2" />
-                <span>{fav.Title}</span>
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold mb-2">Favorites</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {favorites.map((movie) => (
+              <div key={movie.imdbID} className="border p-2">
+                <h2 className="text-xl font-semibold">{movie.Title}</h2>
+                <p>Year: {movie.Year}</p>
+                {movie.Poster !== "N/A" && (
+                  <img src={movie.Poster} alt={movie.Title} className="mt-2 w-48" />
+                )}
                 <button
-                  onClick={() => removeFavorite(fav.imdbID)}
-                  className="bg-red-500 text-white px-2 py-1 ml-2"
+                  onClick={() => removeFavorite(movie.imdbID)}
+                  className="mt-2 bg-red-500 text-white px-3 py-1"
                 >
-                  Remove
+                  Remove from Favorites
                 </button>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
     </div>
