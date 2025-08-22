@@ -28,29 +28,37 @@ function App() {
   };
 
   return (
-    <div className="App p-4">
-      <h1 className="text-2xl font-bold mb-4">Movie Database</h1>
-      <input
-        type="text"
-        placeholder="Search for a movie"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        className="border p-2 mr-2"
-      />
-      <button onClick={searchMovie} className="bg-blue-500 text-white px-4 py-2">
-        Search
-      </button>
+    <div className="App p-4 max-w-xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4 text-center">Movie Database</h1>
+      
+      <div className="flex mb-4">
+        <input
+          type="text"
+          placeholder="Search for a movie"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="flex-1 border p-2 mr-2 rounded"
+        />
+        <button
+          onClick={searchMovie}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Search
+        </button>
+      </div>
 
-      {error && <p className="text-red-500 mt-4">{error}</p>}
+      {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
 
       {movie && (
-        <div className="mt-4">
-          <h2 className="text-xl font-semibold">{movie.Title}</h2>
-          <p>Year: {movie.Year}</p>
-          <p>Genre: {movie.Genre}</p>
-          <p>Cast: {movie.Actors}</p>
-          <p>Plot: {movie.Plot}</p>
-          <img src={movie.Poster} alt={movie.Title} className="mt-2 w-48" />
+        <div className="mt-4 border p-4 rounded shadow-md">
+          <h2 className="text-xl font-semibold mb-2">{movie.Title}</h2>
+          <p><strong>Year:</strong> {movie.Year}</p>
+          <p><strong>Genre:</strong> {movie.Genre}</p>
+          <p><strong>Cast:</strong> {movie.Actors}</p>
+          <p className="mt-2">{movie.Plot}</p>
+          {movie.Poster && (
+            <img src={movie.Poster} alt={movie.Title} className="mt-4 w-48 mx-auto" />
+          )}
         </div>
       )}
     </div>
