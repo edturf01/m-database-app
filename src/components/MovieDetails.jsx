@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import SearchBar from "./components/SearchBar";
+import MovieCard from "./components/MovieCard";
 
 function App() {
   const [query, setQuery] = useState("");
@@ -30,29 +32,9 @@ function App() {
   return (
     <div className="App p-4">
       <h1 className="text-2xl font-bold mb-4">Movie Database</h1>
-      <input
-        type="text"
-        placeholder="Search for a movie"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        className="border p-2 mr-2"
-      />
-      <button onClick={searchMovie} className="bg-blue-500 text-white px-4 py-2">
-        Search
-      </button>
-
-      {error && <p className="text-red-500 mt-4">{error}</p>}
-
-      {movie && (
-        <div className="mt-4">
-          <h2 className="text-xl font-semibold">{movie.Title}</h2>
-          <p>Year: {movie.Year}</p>
-          <p>Genre: {movie.Genre}</p>
-          <p>Cast: {movie.Actors}</p>
-          <p>Plot: {movie.Plot}</p>
-          <img src={movie.Poster} alt={movie.Title} className="mt-2 w-48" />
-        </div>
-      )}
+      <SearchBar query={query} setQuery={setQuery} onSearch={searchMovie} />
+      {error && <p className="text-red-500 mt-2">{error}</p>}
+      <MovieCard movie={movie} />
     </div>
   );
 }
