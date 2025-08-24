@@ -1,42 +1,66 @@
-import React, { useState } from "react";
-import SearchBar from "./components/SearchBar";
-import MovieCard from "./components/MovieCard";
+import React from 'react';
 
-function App() {
-  const [query, setQuery] = useState("");
-  const [movie, setMovie] = useState(null);
-  const [error, setError] = useState("");
+const MovieDetails = ({ movie, onBack }) => {
+  if (!movie) {
+    return null; // Don't render if no movie is selected
+  }
 
-  const API_KEY = "450513ee";
-
-  const searchMovie = async () => {
-    if (!query) return;
-    try {
-      const response = await fetch(
-        `https://www.omdbapi.com/?t=${query}&apikey=${API_KEY}`
+  // Helper function to render ratings if they exist
+  const renderRatings = () => {
+    if (movie.Ratings && movie.Ratings.length > 0) {
+      return (
+        <div className="mt-4">
+          <h4 className="text-xl font-semibold mb-2">Ratings:</h4>
+          <div className="flex flex-wrap gap-4">
+            {movie.Ratings.map((rating, index) => (
+              <div key={index} className="bg-gray-700 p-3 rounded-lg">
+                <p className="text-sm text-gray-400">{rating.Source}</p>
+                <p className="font-bold">{rating.Value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       );
-      const data = await response.json();
-      if (data.Response === "True") {
-        setMovie(data);
-        setError("");
-      } else {
-        setMovie(null);
-        setError(data.Error);
-      }
-    } catch (err) {
-      setError("Failed to fetch data");
-      setMovie(null);
     }
+    return null;
   };
 
   return (
-    <div className="App p-4">
-      <h1 className="text-2xl font-bold mb-4">Movie Database</h1>
-      <SearchBar query={query} setQuery={setQuery} onSearch={searchMovie} />
-      {error && <p className="text-red-500 mt-2">{error}</p>}
-      <MovieCard movie={movie} />
+    <div className="bg-gray-800 rounded-lg shadow-xl p-6 mt-8 max-w-4xl mx-auto">
+      <button 
+        onClick={onBack}
+        className="mb-4 text-blue-400 hover:underline transition-all duration-200"
+      >
+        &larr; Back to Search
+      </button>
+      
+      <div className="md:flex gap-8">
+        <div className="flex-shrink-0">
+          <img 
+            src={movie.Poster !== 'N/A' ? movie.Poster : 'https://via.placeholder.com/400'}
+            alt={movie.Title}
+            className="rounded-lg shadow-md w-full md:w-auto"
+          />
+        </div>
+        
+        <div className="mt-6 md:mt-0 flex-grow">
+          <h2 className="text-3xl font-bold mb-2">{movie.Title} <span className="text-gray-400 font-normal">({movie.Year})</span></h2>
+          <p className="text-lg text-blue-400 mb-2">{movie.Genre}</p>
+          <p className="text-gray-300 italic mb-4">{movie.Plot}</p>
+          
+          <div className="space-y-2 text-gray-300">
+            <p><strong>Directed by:</strong> {movie.Director}</p>
+            <p><strong>Written by:</strong> {movie.Writer}</p>
+            <p><strong>Cast:</strong> {movie.Actors}</p>
+            <p><strong>Runtime:</strong> {movie.Runtime}</p>
+            <p><strong>IMDB Rating:</strong> {movie.imdbRating} / 10</p>
+          </div>
+          
+          {renderRatings()}
+        </div>
+      </div>
     </div>
   );
-}
+};
 
-export default App;
+export default MovieDetails;

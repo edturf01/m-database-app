@@ -1,23 +1,30 @@
-import React from "react";
+import React, { useState, useEffect } from 'react';
 
-function SearchBar({ query, setQuery, onSearch }) {
+const SearchBar = ({ onSearch }) => {
+  const [query, setQuery] = useState('');
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    onSearch(query);
+  };
+
   return (
-    <div className="mb-4">
+    <form onSubmit={handleSearch} className="flex justify-center my-4">
       <input
         type="text"
-        placeholder="Search for a movie"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        className="border p-2 mr-2 w-64"
+        placeholder="Search for a movie..."
+        className="w-full max-w-lg p-2 rounded-l-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
       <button
-        onClick={onSearch}
-        className="bg-blue-500 text-white px-4 py-2 rounded"
+        type="submit"
+        className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-r-lg font-semibold transition-colors duration-200"
       >
         Search
       </button>
-    </div>
+    </form>
   );
-}
+};
 
 export default SearchBar;
