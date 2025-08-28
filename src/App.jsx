@@ -1,185 +1,102 @@
-import React, { useState, useEffect } from 'react';
-import SearchBar from './components/SearchBar';
-import MovieList from './components/MovieList';
-import MovieDetails from './components/MovieDetails';
-import Pagination from './components/Pagination';
-import HeroBanner from './components/HeroBanner';
-import Header from './components/Header';
+import { useState, useEffect } from 'react';
+import './App.css';
 
-const API_KEY = '450513ee';
-const API_URL = 'http://www.omdbapi.com/';
+ 
+const API_KEY = import.meta.env.VITE_OMDB_API_KEY;
+const API_URL = 'https://www.omdbapi.com/';
 
 function App() {
   const [movies, setMovies] = useState([]);
-  const [selectedMovie, setSelectedMovie] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalResults, setTotalResults] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const [favorites, setFavorites] = useState(() => {
-    try {
-      const savedFavorites = localStorage.getItem('movieFavorites');
-      return savedFavorites ? JSON.parse(savedFavorites) : [];
-    } catch (e) {
-      console.error("Failed to load favorites from localStorage", e);
-      return [];
-    }
-  });
-
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  const searchMovies = async (query, page = 1) => {
+  
+  const fetchMovies = async (query) => {
     setLoading(true);
-    setError('');
-    setMovies([]);
-    setSelectedMovie(null);
+    setError(null);
+
     try {
-      const response = await fetch(`${API_URL}?s=${query}&page=${page}&apikey=${API_KEY}`);
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
+      const response = await fetch(
+        `${API_URL}?apikey=${API_KEY}&s=${query}`
+      );
       const data = await response.json();
+
       if (data.Response === 'True') {
         setMovies(data.Search);
-        setTotalResults(Number(data.totalResults));
       } else {
         setMovies([]);
-        setError(data.Error);
-        setTotalResults(0);
+        setError(data.Error || 'No movies found');
       }
     } catch (err) {
-      setError('Failed to fetch movies. Please check your network connection.');
+      setError('Failed to fetch movies');
     } finally {
       setLoading(false);
     }
   };
 
-  const getMovieDetails = async (id) => {
-    setLoading(true);
-    setError('');
-    try {
-      const response = await fetch(`${API_URL}?i=${id}&apikey=${API_KEY}`);
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const data = await response.json();
-      if (data.Response === 'True') {
-        setSelectedMovie(data);
-      } else {
-        setError(data.Error);
-      }
-    } catch (err) {
-      setError('Failed to fetch movie details.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const addFavorite = (movie) => {
-    setFavorites((prevFavorites) => {
-      if (!prevFavorites.some(fav => fav.imdbID === movie.imdbID)) {
-        return [...prevFavorites, movie];
-      }
-      return prevFavorites;
-    });
-  };
-
-  const removeFavorite = (movieId) => {
-    setFavorites((prevFavorites) => prevFavorites.filter(fav => fav.imdbID !== movieId));
-  };
-
+  
   useEffect(() => {
-    localStorage.setItem('movieFavorites', JSON.stringify(favorites));
-  }, [favorites]);
+    const defaultMovies = ['Avengers', 'Batman', 'Spiderman', 'Superman'];
 
-  useEffect(() => {
-    if (searchQuery) {
-      searchMovies(searchQuery, currentPage);
-    } else {
-      const initialMovies = ['superman', 'spiderman', 'mission impossible', 'wednesday', 'my oxford year'];
-      const fetchInitialMovies = async () => {
-        setLoading(true);
-        setError('');
-        try {
-          const promises = initialMovies.map(title => fetch(`${API_URL}?s=${title}&apikey=${API_KEY}`).then(res => res.json()));
-          const results = await Promise.all(promises);
-          const combinedMovies = results.flatMap(data => data.Search || []);
-          const sortedMovies = combinedMovies.sort((a, b) => parseInt(b.Year) - parseInt(a.Year));
-          setMovies(sortedMovies);
-          setTotalResults(sortedMovies.length);
-        } catch (err) {
-          setError('Failed to load initial movies.');
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchInitialMovies();
-    }
-  }, [searchQuery, currentPage]);
+    const fetchInitialMovies = async () => {
+      setLoading(true);
+      try {
+        const responses = await Promise.all(
+          defaultMovies.map((title) =>
+            fetch(`${API_URL}?apikey=${API_KEY}&s=${title}`).then((res) =>
+              res.json()
+            )
+          )
+        );
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
+        const validMovies = responses
+          .filter((res) => res.Response === 'True')
+          .flatMap((res) => res.Search);
 
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-  };
+        setMovies(validMovies);
+      } catch (err) {
+        setError('Failed to load initial movies');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleBackToHome = () => {
-    setSelectedMovie(null);
-  };
+    fetchInitialMovies();
+  }, []);
 
   return (
-    <div className={`${isDarkMode ? 'dark' : ''}`}>
-      <div
-        className="min-h-screen p-4 transition-colors duration-300 bg-gray-900 dark:bg-gray-800"
-      >
-        <Header 
-          onBackToHome={handleBackToHome}
-          onToggleTheme={toggleTheme}
-          isDarkMode={isDarkMode}
+    <div className="App">
+      <h1>Movie Database</h1>
+
+      <div className="search-bar">
+        <input
+          type="text"
+          placeholder="Search movies..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
         />
-        
-        {/* New: Container for Hero Banner and Background Image */}
-        <div className="relative mb-8">
-            <div
-                className="absolute inset-0 z-0 opacity-20 rounded-lg"
-                style={{
-                    backgroundImage: 'url(https://images.unsplash.com/photo-1542204165-65bf2659e951?q=80&w=1770&auto=format&fit=crop)',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                }}
-            ></div>
-            <div className="relative z-10">
-                <HeroBanner />
-            </div>
-        </div>
+        <button onClick={() => fetchMovies(searchQuery)}>Search</button>
+      </div>
 
-        <SearchBar onSearch={(query) => {
-          setSearchQuery(query);
-          setCurrentPage(1);
-        }} />
+      {loading && <p>Loading...</p>}
+      {error && <p className="error">{error}</p>}
 
-        {loading && <p className="text-center text-lg mt-4 text-white">Loading...</p>}
-        {error && <p className="text-center text-red-500 mt-4">{error}</p>}
-
-        {!loading && !error && !selectedMovie && (
-          <>
-            <MovieList
-              movies={movies}
-              onMovieClick={getMovieDetails}
-              favorites={favorites}
-              onAddFavorite={addFavorite}
-              onRemoveFavorite={removeFavorite}
+      <div className="movies">
+        {movies.map((movie) => (
+          <div key={movie.imdbID} className="movie-card">
+            <img
+              src={
+                movie.Poster !== 'N/A'
+                  ? movie.Poster
+                  : 'https://via.placeholder.com/150'
+              }
+              alt={movie.Title}
             />
-          </>
-        )}
-
-        {!loading && !error && selectedMovie && (
-          <MovieDetails movie={selectedMovie} onBack={() => setSelectedMovie(null)} />
-        )}
+            <h3>{movie.Title}</h3>
+            <p>{movie.Year}</p>
+          </div>
+        ))}
       </div>
     </div>
   );
