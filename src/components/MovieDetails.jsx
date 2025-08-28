@@ -2,10 +2,9 @@ import React from 'react';
 
 const MovieDetails = ({ movie, onBack }) => {
   if (!movie) {
-    return null; // Don't render if no movie is selected
+    return null;
   }
 
-  // Helper function to render ratings if they exist
   const renderRatings = () => {
     if (movie.Ratings && movie.Ratings.length > 0) {
       return (
@@ -31,7 +30,7 @@ const MovieDetails = ({ movie, onBack }) => {
         onClick={onBack}
         className="mb-4 text-blue-400 hover:underline transition-all duration-200"
       >
-        &larr; Back to Search
+        &larr; Back to Homepage
       </button>
       
       <div className="md:flex gap-8">

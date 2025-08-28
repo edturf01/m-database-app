@@ -1,32 +1,31 @@
-<<<<<<< HEAD
-# React + Vite
+# 🎬 M-Database App  
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A responsive React application that allows users to search for movies, view detailed information, and explore ratings using the **OMDb API**. Built with **React** and **Tailwind CSS**, this project demonstrates API integration, state management, and modern frontend development practices.  
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Features  
+- 🔍 Search movies by title using the OMDb API  
+- 🖼️ Display movie posters, titles, and release year  
+- 📖 Movie Details View with plot, cast, genre, and ratings  
+- ⚡ Responsive design with Tailwind CSS  
+- ❌ Error handling for invalid searches or network issues  
+- 🌍 Deployed on Vercel/Netlify  
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-=======
-# M-Database App
+## 🛠️ Tech Stack  
+- React (Vite) – Frontend framework  
+- Tailwind CSS – Styling and responsive UI  
+- OMDb API – Movie data source  
+- Vercel/Netlify – Deployment  
 
-Movie Database App built with React.  
+---
 
-Users can:
-- Search for movies
-- View search results with title, year, and poster
-- Click on a movie to see detailed information (plot, cast, director, genre, IMDb ratings)
+## 🌍 Links
 
-Technologies used:
-- React JS
-- Tailwind CSS
-- OMDB API
-- React Router
+Repo: https://github.com/edturf01/m-database-app.git
 
-## Setup
-1. Clone the repository:
->>>>>>> 408f9a1f48451149c7f4599d1fc5f6f630cfdaa7
+Live Demo: https://movie-database.vercel.app
+
+Demo Video: https://www.loom.com/share/your-video-id

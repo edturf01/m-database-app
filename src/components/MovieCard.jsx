@@ -3,7 +3,7 @@ import React from 'react';
 const MovieCard = ({ movie, onMovieClick, isFavorite, onAddFavorite, onRemoveFavorite }) => {
   return (
     <div
-      className="bg-gray-800 rounded-lg shadow-lg overflow-hidden transform transition duration-300 hover:scale-105"
+      className="bg-gray-800 dark:bg-gray-700 rounded-lg shadow-lg overflow-hidden transform transition duration-300 hover:scale-105"
     >
       <div className="relative">
         <img
@@ -14,7 +14,7 @@ const MovieCard = ({ movie, onMovieClick, isFavorite, onAddFavorite, onRemoveFav
         />
         <button
           onClick={(e) => {
-            e.stopPropagation(); // Prevents movie details from opening
+            e.stopPropagation();
             if (isFavorite) {
               onRemoveFavorite(movie.imdbID);
             } else {
@@ -27,8 +27,9 @@ const MovieCard = ({ movie, onMovieClick, isFavorite, onAddFavorite, onRemoveFav
         </button>
       </div>
       <div className="p-4">
-        <h3 className="text-xl font-bold truncate">{movie.Title}</h3>
-        <p className="text-gray-400 mt-1">{movie.Year}</p>
+        {/* Updated text color for movie title and year */}
+        <h3 className="text-xl font-bold truncate text-white dark:text-white">{movie.Title}</h3>
+        <p className="text-gray-400 mt-1 text-white dark:text-white">{movie.Year}</p>
       </div>
     </div>
   );

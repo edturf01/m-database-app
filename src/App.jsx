@@ -3,8 +3,10 @@ import SearchBar from './components/SearchBar';
 import MovieList from './components/MovieList';
 import MovieDetails from './components/MovieDetails';
 import Pagination from './components/Pagination';
+import HeroBanner from './components/HeroBanner';
+import Header from './components/Header';
 
-const API_KEY = '450513ee'; 
+const API_KEY = '450513ee';
 const API_URL = 'http://www.omdbapi.com/';
 
 function App() {
@@ -13,12 +15,9 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-
-
   const [currentPage, setCurrentPage] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
 
-  
   const [favorites, setFavorites] = useState(() => {
     try {
       const savedFavorites = localStorage.getItem('movieFavorites');
@@ -29,23 +28,19 @@ function App() {
     }
   });
 
-  
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
- 
   const searchMovies = async (query, page = 1) => {
     setLoading(true);
     setError('');
     setMovies([]);
     setSelectedMovie(null);
-
     try {
       const response = await fetch(`${API_URL}?s=${query}&page=${page}&apikey=${API_KEY}`);
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
       const data = await response.json();
-
       if (data.Response === 'True') {
         setMovies(data.Search);
         setTotalResults(Number(data.totalResults));
@@ -61,18 +56,15 @@ function App() {
     }
   };
 
- 
   const getMovieDetails = async (id) => {
     setLoading(true);
     setError('');
-
     try {
       const response = await fetch(`${API_URL}?i=${id}&apikey=${API_KEY}`);
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
       const data = await response.json();
-
       if (data.Response === 'True') {
         setSelectedMovie(data);
       } else {
@@ -84,7 +76,6 @@ function App() {
       setLoading(false);
     }
   };
-
 
   const addFavorite = (movie) => {
     setFavorites((prevFavorites) => {
@@ -99,34 +90,25 @@ function App() {
     setFavorites((prevFavorites) => prevFavorites.filter(fav => fav.imdbID !== movieId));
   };
 
- 
   useEffect(() => {
     localStorage.setItem('movieFavorites', JSON.stringify(favorites));
   }, [favorites]);
-
 
   useEffect(() => {
     if (searchQuery) {
       searchMovies(searchQuery, currentPage);
     } else {
-      
       const initialMovies = ['superman', 'spiderman', 'mission impossible', 'wednesday', 'my oxford year'];
       const fetchInitialMovies = async () => {
         setLoading(true);
         setError('');
         try {
-          const promises = initialMovies.map(title =>
-            fetch(`${API_URL}?s=${title}&apikey=${API_KEY}`)
-              .then(res => res.json())
-          );
+          const promises = initialMovies.map(title => fetch(`${API_URL}?s=${title}&apikey=${API_KEY}`).then(res => res.json()));
           const results = await Promise.all(promises);
           const combinedMovies = results.flatMap(data => data.Search || []);
-          
-          
           const sortedMovies = combinedMovies.sort((a, b) => parseInt(b.Year) - parseInt(a.Year));
-
           setMovies(sortedMovies);
-          setTotalResults(sortedMovies.length); 
+          setTotalResults(sortedMovies.length);
         } catch (err) {
           setError('Failed to load initial movies.');
         } finally {
@@ -145,22 +127,42 @@ function App() {
     setIsDarkMode(!isDarkMode);
   };
 
+  const handleBackToHome = () => {
+    setSelectedMovie(null);
+  };
+
   return (
     <div className={`${isDarkMode ? 'dark' : ''}`}>
-      <div className="min-h-screen bg-gray-900 text-white p-4 transition-colors duration-300">
-        <header className="flex justify-between items-center my-8">
-          <h1 className="text-4xl font-bold">M-Database</h1>
-          <button onClick={toggleTheme} className="p-2 rounded-full bg-gray-700 text-yellow-300 hover:bg-gray-600 transition-colors duration-200">
-            {isDarkMode ? '☀️' : '🌙'}
-          </button>
-        </header>
+      <div
+        className="min-h-screen p-4 transition-colors duration-300 bg-gray-900 dark:bg-gray-800"
+      >
+        <Header 
+          onBackToHome={handleBackToHome}
+          onToggleTheme={toggleTheme}
+          isDarkMode={isDarkMode}
+        />
+        
+        {/* New: Container for Hero Banner and Background Image */}
+        <div className="relative mb-8">
+            <div
+                className="absolute inset-0 z-0 opacity-20 rounded-lg"
+                style={{
+                    backgroundImage: 'url(https://images.unsplash.com/photo-1542204165-65bf2659e951?q=80&w=1770&auto=format&fit=crop)',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                }}
+            ></div>
+            <div className="relative z-10">
+                <HeroBanner />
+            </div>
+        </div>
 
         <SearchBar onSearch={(query) => {
           setSearchQuery(query);
-          setCurrentPage(1); 
+          setCurrentPage(1);
         }} />
 
-        {loading && <p className="text-center text-lg mt-4">Loading...</p>}
+        {loading && <p className="text-center text-lg mt-4 text-white">Loading...</p>}
         {error && <p className="text-center text-red-500 mt-4">{error}</p>}
 
         {!loading && !error && !selectedMovie && (
@@ -172,7 +174,6 @@ function App() {
               onAddFavorite={addFavorite}
               onRemoveFavorite={removeFavorite}
             />
-            {/* Pagination is now only for search results */}
           </>
         )}
 
