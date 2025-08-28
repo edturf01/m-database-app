@@ -26,6 +26,6 @@ A responsive React application that allows users to search for movies, view deta
 
 Repo: https://github.com/edturf01/m-database-app.git
 
-Live Demo: https://movie-database.vercel.app
+Live Demo: https://m-database-app.vercel.app/
 
 Demo Video: https://www.loom.com/share/your-video-id
